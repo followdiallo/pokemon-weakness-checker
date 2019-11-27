@@ -1,7 +1,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"net/http"
 	"strings"
 )
 
@@ -21,6 +24,8 @@ var pokedex = []pokemon{
 	{"charizard", []string{"fire", "flying"}, "url"},
 	{"blastoise", []string{"water"}, "url"},
 	{"pidgey", []string{"normal", "flying"}, "url"},
+	//{"", []string{""}, "url"},
+	{"diallo", []string{"fairy", "ghost"}, "url"},
 }
 
 var weaknesses = []matchup{
@@ -65,6 +70,61 @@ var resistances = []matchup{
 	{"steel", []string{"poison", "bug", "dragon", "fairy", "flying", "grass", "ice", "normal", "psychic", "rock", "steel"}},
 }
 
+type response struct {
+	Name    string  `json:"name"`
+	Types   []Type  `json:"types"`
+	Sprites Sprites `json:"sprites"`
+}
+
+// type Types struct {
+// 	Type Type `json:"type"`
+// }
+
+type Type struct {
+	Name TypeInfo `json:"type"`
+	//Slot string   `json:"slot"`
+}
+
+type Sprites struct {
+	Sprite string `json:"front_default"`
+}
+
+type TypeInfo struct {
+	Name string `json:"name"`
+	//URL  string `json:"url"`
+}
+
+func (t TypeInfo) String() string {
+	return fmt.Sprintf(t.Name)
+}
+
+func (t Type) String() string {
+	fmt.Println(t.Name)
+	return fmt.Sprintf("%v", t.Name)
+}
+
+//}
+
+func testCall(name string) []string {
+	resp, _ := http.Get("https://pokeapi.co/api/v2/pokemon/" + strings.ToLower(name))
+	bytes, _ := ioutil.ReadAll(resp.Body)
+	resp.Body.Close()
+	var responseObject response
+	json.Unmarshal(bytes, &responseObject)
+	//fmt.Println(len(responseObject.Types))
+	// var typeStrings = make(map[Types]string)
+	// fmt.Println(typeStrings)
+
+	//return responseObject.Types.String()
+	fmt.Println("penultimate line:", responseObject.Types)
+	fmt.Println(len(responseObject.Types))
+	var typeStrings = []string{}
+	for i := 0; i < len(responseObject.Types); i++ {
+		typeStrings = append(typeStrings, responseObject.Types[i].String())
+	}
+	return typeStrings
+}
+
 func contains(slice []string, target string) bool {
 	doesItContain := false
 	for i := 0; i < len(slice); i++ {
@@ -102,22 +162,23 @@ func getTypeResistances(name string) []string {
 
 func calculateWeaknesses(name string) []string {
 	name = strings.ToLower(name)
-	var targetPoke pokemon
-	for p := 0; p < len(pokedex); p++ {
-		if pokedex[p].Name == name {
-			targetPoke = pokedex[p]
-		}
-	}
+	// var targetPoke pokemon
+	// for p := 0; p < len(pokedex); p++ {
+	// 	if pokedex[p].Name == name {
+	// 		targetPoke = pokedex[p]
+	// 	}
+	// }
+	var targetPokeTypes = testCall(name)
 	var answer = []string{}
-	if len(targetPoke.Types) == 1 {
-		return getTypeWeaknesses(targetPoke.Types[0])
+	if len(targetPokeTypes) == 1 {
+		return getTypeWeaknesses(targetPokeTypes[0])
 	}
-	for i := 0; i < len(targetPoke.Types); i++ {
-		var list = getTypeWeaknesses(targetPoke.Types[i])
+	for i := 0; i < len(targetPokeTypes); i++ {
+		var list = getTypeWeaknesses(targetPokeTypes[i])
 		// fmt.Println("LINE 115", list)
 		// fmt.Println("LINE 116", getTypeResistances(targetPoke.Types[switchTypes(i)]))
 		for j := 0; j < len(list); j++ {
-			if contains(answer, list[j]) == false && contains(getTypeResistances(targetPoke.Types[switchTypes(i)]), list[j]) == false {
+			if contains(answer, list[j]) == false && contains(getTypeResistances(targetPokeTypes[switchTypes(i)]), list[j]) == false {
 				// fmt.Println("INSIDE THE IF", list[j])
 				answer = append(answer, list[j])
 			}
@@ -132,8 +193,10 @@ func calculateWeaknesses(name string) []string {
 
 func main() {
 	//fmt.Println(getTypeWeaknesses("fire"))
-	fmt.Println(calculateWeaknesses("pidgey"))
-	fmt.Println(calculateWeaknesses("charizard"))
-	fmt.Println(calculateWeaknesses("blastoise"))
-	fmt.Println(calculateWeaknesses("venusaur"))
+	// fmt.Println(calculateWeaknesses("pidgey"))
+	// fmt.Println(calculateWeaknesses("charizard"))
+	// fmt.Println(calculateWeaknesses("blastoise"))
+	fmt.Println(calculateWeaknesses("sableye"))
+	// fmt.Println(calculateWeaknesses("DIALLO"))
+	//fmt.Println("bottom line: ", testCall("vileplume"))
 }
