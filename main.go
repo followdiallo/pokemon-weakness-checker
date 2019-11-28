@@ -8,25 +8,19 @@ import (
 	"strings"
 )
 
-type pokemon struct {
-	Name   string
-	Types  []string
-	Sprite string
-}
-
 type matchup struct {
 	Type     string
 	Matchups []string
 }
 
-var pokedex = []pokemon{
-	{"venusaur", []string{"grass", "poison"}, "url"},
-	{"charizard", []string{"fire", "flying"}, "url"},
-	{"blastoise", []string{"water"}, "url"},
-	{"pidgey", []string{"normal", "flying"}, "url"},
-	//{"", []string{""}, "url"},
-	{"diallo", []string{"fairy", "ghost"}, "url"},
-}
+// var pokedex = []pokemon{
+// 	{"venusaur", []string{"grass", "poison"}, "url"},
+// 	{"charizard", []string{"fire", "flying"}, "url"},
+// 	{"blastoise", []string{"water"}, "url"},
+// 	{"pidgey", []string{"normal", "flying"}, "url"},
+// 	//{"", []string{""}, "url"},
+// 	{"diallo", []string{"fairy", "ghost"}, "url"},
+// }
 
 var weaknesses = []matchup{
 	{"grass", []string{"fire", "flying", "poison", "bug", "ice"}},
@@ -52,7 +46,7 @@ var weaknesses = []matchup{
 var resistances = []matchup{
 	{"grass", []string{"grass", "electric"}},
 	{"fire", []string{"fire", "fairy", "bug"}},
-	{"water", []string{"water", "steel", "fire"}},
+	{"water", []string{"water", "steel", "fire", "ice"}},
 	{"normal", []string{"ghost"}},
 	{"flying", []string{"bug", "fighting", "grass", "ground"}},
 	{"poison", []string{"poison", "fighting", "fairy"}},
@@ -74,6 +68,12 @@ type response struct {
 	Name    string  `json:"name"`
 	Types   []Type  `json:"types"`
 	Sprites Sprites `json:"sprites"`
+}
+
+type Pokemon struct {
+	Name   string   `json:"name"`
+	Types  []string `json:"types"`
+	Sprite string   `json:"sprite"`
 }
 
 // type Types struct {
@@ -99,13 +99,12 @@ func (t TypeInfo) String() string {
 }
 
 func (t Type) String() string {
-	fmt.Println(t.Name)
 	return fmt.Sprintf("%v", t.Name)
 }
 
 //}
 
-func testCall(name string) []string {
+func pokeapiCall(name string) []string {
 	resp, _ := http.Get("https://pokeapi.co/api/v2/pokemon/" + strings.ToLower(name))
 	bytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -116,8 +115,9 @@ func testCall(name string) []string {
 	// fmt.Println(typeStrings)
 
 	//return responseObject.Types.String()
-	fmt.Println("penultimate line:", responseObject.Types)
-	fmt.Println(len(responseObject.Types))
+	// fmt.Println("penultimate line:", responseObject.Types)
+	// fmt.Println(len(responseObject.Types))
+	fmt.Println(responseObject.Sprites)
 	var typeStrings = []string{}
 	for i := 0; i < len(responseObject.Types); i++ {
 		typeStrings = append(typeStrings, responseObject.Types[i].String())
@@ -168,7 +168,7 @@ func calculateWeaknesses(name string) []string {
 	// 		targetPoke = pokedex[p]
 	// 	}
 	// }
-	var targetPokeTypes = testCall(name)
+	var targetPokeTypes = pokeapiCall(name)
 	var answer = []string{}
 	if len(targetPokeTypes) == 1 {
 		return getTypeWeaknesses(targetPokeTypes[0])
@@ -191,12 +191,26 @@ func calculateWeaknesses(name string) []string {
 // var charizard = pokemon{"CHARIZARD", []string{"FIRE"}, "PIC"}
 // var data = []pokemon{pokemon{"VILEPLUME", []string{"GRASS"}, "url"}}
 
+func indexHandler(w http.ResponseWriter, r *http.Request) {
+	//var buttons = buttonClick
+	fmt.Fprintf(w, `<h1>Check Your Pokémon's Weaknesses</h1>`)
+	fmt.Fprintf(w, `<input id="input" type="text">`)
+	fmt.Fprintf(w, `<button onclick="console.log(document.getElementById('input').value)">Check</button>`)
+}
+
+func buttonClick() {
+	fmt.Println("click click")
+}
+
 func main() {
+	fmt.Println(calculateWeaknesses("togekiss"))
+	http.HandleFunc("/{name}", indexHandler)
+	http.ListenAndServe(":8000", nil)
 	//fmt.Println(getTypeWeaknesses("fire"))
-	// fmt.Println(calculateWeaknesses("pidgey"))
-	// fmt.Println(calculateWeaknesses("charizard"))
-	// fmt.Println(calculateWeaknesses("blastoise"))
-	fmt.Println(calculateWeaknesses("sableye"))
+	// fmt.Println(calculateWeaknesses("whimsicott"))
+	// fmt.Println(calculateWeaknesses("kingdra"))
+	// fmt.Println(calculateWeaknesses("bob"))
+	// fmt.Println(calculateWeaknesses("sableye"))
 	// fmt.Println(calculateWeaknesses("DIALLO"))
-	//fmt.Println("bottom line: ", testCall("vileplume"))
+	//fmt.Println("bottom line: ", pokeapiCall("vileplume"))
 }
