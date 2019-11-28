@@ -213,6 +213,8 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 func getPokemon(w http.ResponseWriter, r *http.Request) {
 	//TBD
 	params := mux.Vars(r)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(calculateWeaknesses(params["name"]))
 	fmt.Println(calculateWeaknesses(params["name"]))
 }
 
