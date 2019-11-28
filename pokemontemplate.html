@@ -1,0 +1,19 @@
+<h1>{{ .Name }}</h1>
+<img src="{{ .Image }}" />
+<p>{{ .Weaknesses }}</p>
+
+<input id="input" type="text" placeholder="Enter a Pokémon" />
+<a href="http://localhost:8000/pokemon/" id="link"
+><button onclick="changeLink()">SEARCH AGAIN</button></a
+>
+</div>
+<br>
+<a href="http://localhost:8000/pokemon" id="link"><button>BACK</button></a>
+
+<script type="text/javascript">
+  function changeLink() {
+    const name = document.getElementById("input").value;
+    const link = document.getElementById("link");
+    link.href += name;
+  }
+</script>

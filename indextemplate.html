@@ -1,0 +1,15 @@
+<h1>POKÉMON WEAKNESS CHECKER</h1>
+<div>
+  <input id="input" type="text" placeholder="Enter a Pokémon" />
+  <a href="http://localhost:8000/pokemon/" id="link"
+    ><button onclick="changeLink()">CHECK</button></a
+  >
+</div>
+
+<script type="text/javascript">
+  function changeLink() {
+    const name = document.getElementById("input").value;
+    const link = document.getElementById("link");
+    link.href += name;
+  }
+</script>

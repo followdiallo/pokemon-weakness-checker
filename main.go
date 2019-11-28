@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strings"
 
+	"html/template"
+
 	"github.com/gorilla/mux"
 )
 
@@ -100,6 +102,12 @@ type Sprites struct {
 type TypeInfo struct {
 	Name string `json:"name"`
 	//URL  string `json:"url"`
+}
+
+type PokemonPage struct {
+	Name       string
+	Weaknesses []string
+	Image      string
 }
 
 func (t TypeInfo) String() string {
@@ -205,21 +213,24 @@ func calculateWeaknesses(name string) Webdata {
 
 func indexHandler(w http.ResponseWriter, r *http.Request) {
 	//var buttons = buttonClick
-	fmt.Fprintf(w, `<h1>Check Your Pokémon's Weaknesses</h1>`)
-	fmt.Fprintf(w, `<input id="input" type="text">`)
-	fmt.Fprintf(w, `<button onclick="console.log(document.getElementById('input').value)">Check</button>`)
+	t, _ := template.ParseFiles("indextemplate.html")
+	t.Execute(w, nil)
+	// fmt.Fprintf(w, `<h1>Check Your Pokémon's Weaknesses</h1>`)
+	// fmt.Fprintf(w, `<input id="input" type="text">`)
+	// fmt.Fprintf(w, `<button onclick="console.log(document.getElementById('input').value)">Check</button>`)
 }
 
 func getPokemon(w http.ResponseWriter, r *http.Request) {
-	//TBD
 	params := mux.Vars(r)
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(calculateWeaknesses(params["name"]))
-	fmt.Println(calculateWeaknesses(params["name"]))
-}
-
-func buttonClick() {
-	fmt.Println("click click")
+	data := calculateWeaknesses(params["name"])
+	//fmt.Println(data.Name)
+	p := PokemonPage{Name: data.Name, Weaknesses: data.Weaknesses, Image: data.Sprite.Sprite}
+	t, _ := template.ParseFiles("pokemontemplate.html")
+	t.Execute(w, p)
+	// params := mux.Vars(r)
+	// w.Header().Set("Content-Type", "application/json")
+	// json.NewEncoder(w).Encode(calculateWeaknesses(params["name"]))
+	//fmt.Println(calculateWeaknesses(params["name"]))
 }
 
 func main() {
@@ -228,7 +239,7 @@ func main() {
 	router.HandleFunc("/pokemon", indexHandler).Methods("GET")
 	router.HandleFunc("/pokemon/{name}", getPokemon).Methods("GET")
 
-	fmt.Println(calculateWeaknesses("togekiss"))
+	//fmt.Println(calculateWeaknesses("togekiss"))
 	//http.HandleFunc("/{name}", indexHandler)
 	http.ListenAndServe(":8000", router)
 	//fmt.Println(getTypeWeaknesses("fire"))
