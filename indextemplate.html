@@ -1,4 +1,5 @@
-<h1>POKÉMON WEAKNESS CHECKER</h1>
+<h1>Pokémon Weakness Checker</h1>
+<h3>Look up your Pokémon's weaknesses</h3>
 <div>
   <input id="input" type="text" placeholder="Enter a Pokémon" />
   <a href="http://localhost:8000/pokemon/" id="link"
@@ -12,4 +13,14 @@
     const link = document.getElementById("link");
     link.href += name;
   }
+
+  window.onload = () => {
+    const textbox = document.getElementById("input");
+    textbox.addEventListener("keydown", e => {
+      if (e.keyCode === 13) {
+        changeLink();
+        document.getElementById("link").click();
+      }
+    });
+  };
 </script>

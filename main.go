@@ -193,7 +193,7 @@ func getPokemon(w http.ResponseWriter, r *http.Request) {
 func main() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/pokemon", indexHandler).Methods("GET")
+	router.HandleFunc("/", indexHandler).Methods("GET")
 	router.HandleFunc("/pokemon/{name}", getPokemon).Methods("GET")
 	http.ListenAndServe(":8000", router)
 }

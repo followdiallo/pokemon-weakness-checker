@@ -1,6 +1,7 @@
-<h1>{{ .Name }}</h1>
-<img src="{{ .Image }}" />
-<p>{{ .Weaknesses }}</p>
+<p>Pokémon Weakness Checker</p>
+<h1 id="pokemon-name" style="color: white">{{ .Name }}</h1>
+<img src="{{ .Image }}" id="sprite" />
+<div id="weaknesses" style="color: white">{{ .Weaknesses }}</div>
 
 <input id="input" type="text" placeholder="Enter a Pokémon" />
 <a href="http://localhost:8000/pokemon/" id="link"
@@ -8,12 +9,59 @@
 >
 </div>
 <br>
-<a href="http://localhost:8000/pokemon" id="link"><button>BACK</button></a>
+<a href="http://localhost:8000/" id="link"><button>HOME</button></a>
 
 <script type="text/javascript">
   function changeLink() {
     const name = document.getElementById("input").value;
     const link = document.getElementById("link");
     link.href += name;
+  }
+
+  const iconMap = {
+      fire: 'https://cdn.bulbagarden.net/upload/2/26/FireIC_Big.png',
+      water: 'https://cdn.bulbagarden.net/upload/5/56/WaterIC_Big.png',
+      grass: 'https://cdn.bulbagarden.net/upload/7/74/GrassIC_Big.png',
+      bug: 'https://cdn.bulbagarden.net/upload/c/c8/BugIC_Big.png',
+      flying: 'https://cdn.bulbagarden.net/upload/c/cb/FlyingIC_Big.png',
+      poison: 'https://cdn.bulbagarden.net/upload/3/3d/PoisonIC_Big.png',
+      fighting: 'https://cdn.bulbagarden.net/upload/6/67/FightingIC_Big.png',
+      ice: 'https://cdn.bulbagarden.net/upload/6/6f/IceIC_Big.png',
+      electric: 'https://cdn.bulbagarden.net/upload/4/4a/ElectricIC_Big.png',
+      ground: 'https://cdn.bulbagarden.net/upload/8/8f/GroundIC_Big.png',
+      rock: 'https://cdn.bulbagarden.net/upload/c/ce/RockIC_Big.png',
+      ghost: 'https://cdn.bulbagarden.net/upload/7/73/GhostIC_Big.png',
+      psychic: 'https://cdn.bulbagarden.net/upload/6/60/PsychicIC_Big.png',
+      dragon: 'https://cdn.bulbagarden.net/upload/4/48/DragonIC_Big.png',
+      steel: 'https://cdn.bulbagarden.net/upload/d/d4/SteelIC_Big.png',
+      dark: 'https://cdn.bulbagarden.net/upload/5/56/DarkIC_Big.png',
+      fairy: 'https://cdn.bulbagarden.net/upload/7/73/FairyIC_Big.png'
+  }
+
+  window.onload = () => {
+      const pokemonName = document.getElementById("pokemon-name")
+      pokemonName.innerText = pokemonName.innerText.charAt(0).toUpperCase() + pokemonName.innerText.slice(1)
+
+      const textbox = document.getElementById("input");
+      textbox.addEventListener("keydown", (e) => {
+          if (e.keyCode === 13) {
+              changeLink();
+              document.getElementById("link").click()
+          }
+      })
+
+      const weaknesses = document.getElementById("weaknesses")
+      trimmedWeaknesses = weaknesses.innerText.slice(1, weaknesses.innerText.length - 1)
+      weaknessArray = trimmedWeaknesses.split(" ")
+      weaknesses.innerText = "Weaknesses: "
+      weaknessArray.forEach((type) => {
+          weaknesses.innerHTML += `<img src="${iconMap[type]}" class="icon">`
+        //   const icon = document.createAttribute("img")
+        //   icon.src = iconMap[type]
+        //   console.log(icon);
+        //   weaknesses.app += icon
+      })
+      pokemonName.style.color = "black"
+      weaknesses.style.color = "black"
   }
 </script>
