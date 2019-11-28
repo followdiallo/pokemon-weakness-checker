@@ -6,6 +6,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 type matchup struct {
@@ -71,9 +73,15 @@ type response struct {
 }
 
 type Pokemon struct {
-	Name   string   `json:"name"`
-	Types  []string `json:"types"`
-	Sprite string   `json:"sprite"`
+	Name   string `json:"name"`
+	Types  []Type `json:"types"`
+	Sprite string `json:"sprite"`
+}
+
+type Webdata struct {
+	Name       string   `json:"name"`
+	Weaknesses []string `json:"weaknesses"`
+	Sprite     Sprites  `json:"sprite"`
 }
 
 // type Types struct {
@@ -104,7 +112,7 @@ func (t Type) String() string {
 
 //}
 
-func pokeapiCall(name string) []string {
+func pokeapiCall(name string) response {
 	resp, _ := http.Get("https://pokeapi.co/api/v2/pokemon/" + strings.ToLower(name))
 	bytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
@@ -117,12 +125,14 @@ func pokeapiCall(name string) []string {
 	//return responseObject.Types.String()
 	// fmt.Println("penultimate line:", responseObject.Types)
 	// fmt.Println(len(responseObject.Types))
-	fmt.Println(responseObject.Sprites)
-	var typeStrings = []string{}
-	for i := 0; i < len(responseObject.Types); i++ {
-		typeStrings = append(typeStrings, responseObject.Types[i].String())
-	}
-	return typeStrings
+	//fmt.Println(responseObject.Sprites)
+	//var pokemonJSON = Pokemon{responseObject.Name, responseObject.Types, responseObject.Sprites}
+	// var typeStrings = []string{}
+	// for i := 0; i < len(responseObject.Types); i++ {
+	// 	typeStrings = append(typeStrings, responseObject.Types[i].String())
+	// }
+	//fmt.Println(responseObject)
+	return responseObject
 }
 
 func contains(slice []string, target string) bool {
@@ -160,7 +170,7 @@ func getTypeResistances(name string) []string {
 	return []string{""}
 }
 
-func calculateWeaknesses(name string) []string {
+func calculateWeaknesses(name string) Webdata {
 	name = strings.ToLower(name)
 	// var targetPoke pokemon
 	// for p := 0; p < len(pokedex); p++ {
@@ -168,23 +178,25 @@ func calculateWeaknesses(name string) []string {
 	// 		targetPoke = pokedex[p]
 	// 	}
 	// }
-	var targetPokeTypes = pokeapiCall(name)
+	var targetPoke = pokeapiCall(name)
 	var answer = []string{}
-	if len(targetPokeTypes) == 1 {
-		return getTypeWeaknesses(targetPokeTypes[0])
+	if len(targetPoke.Types) == 1 {
+		return Webdata{targetPoke.Name, getTypeWeaknesses(targetPoke.Types[0].String()), targetPoke.Sprites}
 	}
-	for i := 0; i < len(targetPokeTypes); i++ {
-		var list = getTypeWeaknesses(targetPokeTypes[i])
+	for i := 0; i < len(targetPoke.Types); i++ {
+		var list = getTypeWeaknesses(targetPoke.Types[i].String())
 		// fmt.Println("LINE 115", list)
 		// fmt.Println("LINE 116", getTypeResistances(targetPoke.Types[switchTypes(i)]))
 		for j := 0; j < len(list); j++ {
-			if contains(answer, list[j]) == false && contains(getTypeResistances(targetPokeTypes[switchTypes(i)]), list[j]) == false {
+			if contains(answer, list[j]) == false && contains(getTypeResistances(targetPoke.Types[switchTypes(i)].String()), list[j]) == false {
 				// fmt.Println("INSIDE THE IF", list[j])
 				answer = append(answer, list[j])
 			}
 		}
 	}
-	return answer
+	var respJSON = Webdata{targetPoke.Name, answer, targetPoke.Sprites}
+	//fmt.Println(respJSON)
+	return respJSON
 }
 
 // var bulbasaur = []string{"for the love of God please work", "two"}
@@ -198,14 +210,25 @@ func indexHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `<button onclick="console.log(document.getElementById('input').value)">Check</button>`)
 }
 
+func getPokemon(w http.ResponseWriter, r *http.Request) {
+	//TBD
+	params := mux.Vars(r)
+	fmt.Println(calculateWeaknesses(params["name"]))
+}
+
 func buttonClick() {
 	fmt.Println("click click")
 }
 
 func main() {
+	router := mux.NewRouter()
+
+	router.HandleFunc("/pokemon", indexHandler).Methods("GET")
+	router.HandleFunc("/pokemon/{name}", getPokemon).Methods("GET")
+
 	fmt.Println(calculateWeaknesses("togekiss"))
-	http.HandleFunc("/{name}", indexHandler)
-	http.ListenAndServe(":8000", nil)
+	//http.HandleFunc("/{name}", indexHandler)
+	http.ListenAndServe(":8000", router)
 	//fmt.Println(getTypeWeaknesses("fire"))
 	// fmt.Println(calculateWeaknesses("whimsicott"))
 	// fmt.Println(calculateWeaknesses("kingdra"))
