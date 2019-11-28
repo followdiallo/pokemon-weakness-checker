@@ -17,15 +17,6 @@ type matchup struct {
 	Matchups []string
 }
 
-// var pokedex = []pokemon{
-// 	{"venusaur", []string{"grass", "poison"}, "url"},
-// 	{"charizard", []string{"fire", "flying"}, "url"},
-// 	{"blastoise", []string{"water"}, "url"},
-// 	{"pidgey", []string{"normal", "flying"}, "url"},
-// 	//{"", []string{""}, "url"},
-// 	{"diallo", []string{"fairy", "ghost"}, "url"},
-// }
-
 var weaknesses = []matchup{
 	{"grass", []string{"fire", "flying", "poison", "bug", "ice"}},
 	{"fire", []string{"water", "ground", "rock"}},
@@ -86,13 +77,8 @@ type Webdata struct {
 	Sprite     Sprites  `json:"sprite"`
 }
 
-// type Types struct {
-// 	Type Type `json:"type"`
-// }
-
 type Type struct {
 	Name TypeInfo `json:"type"`
-	//Slot string   `json:"slot"`
 }
 
 type Sprites struct {
@@ -101,7 +87,6 @@ type Sprites struct {
 
 type TypeInfo struct {
 	Name string `json:"name"`
-	//URL  string `json:"url"`
 }
 
 type PokemonPage struct {
@@ -118,28 +103,20 @@ func (t Type) String() string {
 	return fmt.Sprintf("%v", t.Name)
 }
 
-//}
-
 func pokeapiCall(name string) response {
 	resp, _ := http.Get("https://pokeapi.co/api/v2/pokemon/" + strings.ToLower(name))
 	bytes, _ := ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
 	var responseObject response
 	json.Unmarshal(bytes, &responseObject)
-	//fmt.Println(len(responseObject.Types))
 	// var typeStrings = make(map[Types]string)
-	// fmt.Println(typeStrings)
 
 	//return responseObject.Types.String()
-	// fmt.Println("penultimate line:", responseObject.Types)
-	// fmt.Println(len(responseObject.Types))
-	//fmt.Println(responseObject.Sprites)
 	//var pokemonJSON = Pokemon{responseObject.Name, responseObject.Types, responseObject.Sprites}
 	// var typeStrings = []string{}
 	// for i := 0; i < len(responseObject.Types); i++ {
 	// 	typeStrings = append(typeStrings, responseObject.Types[i].String())
 	// }
-	//fmt.Println(responseObject)
 	return responseObject
 }
 
@@ -180,12 +157,6 @@ func getTypeResistances(name string) []string {
 
 func calculateWeaknesses(name string) Webdata {
 	name = strings.ToLower(name)
-	// var targetPoke pokemon
-	// for p := 0; p < len(pokedex); p++ {
-	// 	if pokedex[p].Name == name {
-	// 		targetPoke = pokedex[p]
-	// 	}
-	// }
 	var targetPoke = pokeapiCall(name)
 	var answer = []string{}
 	if len(targetPoke.Types) == 1 {
@@ -193,44 +164,30 @@ func calculateWeaknesses(name string) Webdata {
 	}
 	for i := 0; i < len(targetPoke.Types); i++ {
 		var list = getTypeWeaknesses(targetPoke.Types[i].String())
-		// fmt.Println("LINE 115", list)
-		// fmt.Println("LINE 116", getTypeResistances(targetPoke.Types[switchTypes(i)]))
 		for j := 0; j < len(list); j++ {
 			if contains(answer, list[j]) == false && contains(getTypeResistances(targetPoke.Types[switchTypes(i)].String()), list[j]) == false {
-				// fmt.Println("INSIDE THE IF", list[j])
 				answer = append(answer, list[j])
 			}
 		}
 	}
 	var respJSON = Webdata{targetPoke.Name, answer, targetPoke.Sprites}
-	//fmt.Println(respJSON)
 	return respJSON
 }
 
-// var bulbasaur = []string{"for the love of God please work", "two"}
-// var charizard = pokemon{"CHARIZARD", []string{"FIRE"}, "PIC"}
-// var data = []pokemon{pokemon{"VILEPLUME", []string{"GRASS"}, "url"}}
-
 func indexHandler(w http.ResponseWriter, r *http.Request) {
-	//var buttons = buttonClick
 	t, _ := template.ParseFiles("indextemplate.html")
 	t.Execute(w, nil)
-	// fmt.Fprintf(w, `<h1>Check Your Pokémon's Weaknesses</h1>`)
-	// fmt.Fprintf(w, `<input id="input" type="text">`)
-	// fmt.Fprintf(w, `<button onclick="console.log(document.getElementById('input').value)">Check</button>`)
 }
 
 func getPokemon(w http.ResponseWriter, r *http.Request) {
 	params := mux.Vars(r)
 	data := calculateWeaknesses(params["name"])
-	//fmt.Println(data.Name)
 	p := PokemonPage{Name: data.Name, Weaknesses: data.Weaknesses, Image: data.Sprite.Sprite}
 	t, _ := template.ParseFiles("pokemontemplate.html")
 	t.Execute(w, p)
 	// params := mux.Vars(r)
 	// w.Header().Set("Content-Type", "application/json")
 	// json.NewEncoder(w).Encode(calculateWeaknesses(params["name"]))
-	//fmt.Println(calculateWeaknesses(params["name"]))
 }
 
 func main() {
@@ -238,15 +195,5 @@ func main() {
 
 	router.HandleFunc("/pokemon", indexHandler).Methods("GET")
 	router.HandleFunc("/pokemon/{name}", getPokemon).Methods("GET")
-
-	//fmt.Println(calculateWeaknesses("togekiss"))
-	//http.HandleFunc("/{name}", indexHandler)
 	http.ListenAndServe(":8000", router)
-	//fmt.Println(getTypeWeaknesses("fire"))
-	// fmt.Println(calculateWeaknesses("whimsicott"))
-	// fmt.Println(calculateWeaknesses("kingdra"))
-	// fmt.Println(calculateWeaknesses("bob"))
-	// fmt.Println(calculateWeaknesses("sableye"))
-	// fmt.Println(calculateWeaknesses("DIALLO"))
-	//fmt.Println("bottom line: ", pokeapiCall("vileplume"))
 }
