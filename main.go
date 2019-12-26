@@ -109,14 +109,6 @@ func pokeapiCall(name string) response {
 	resp.Body.Close()
 	var responseObject response
 	json.Unmarshal(bytes, &responseObject)
-	// var typeStrings = make(map[Types]string)
-
-	//return responseObject.Types.String()
-	//var pokemonJSON = Pokemon{responseObject.Name, responseObject.Types, responseObject.Sprites}
-	// var typeStrings = []string{}
-	// for i := 0; i < len(responseObject.Types); i++ {
-	// 	typeStrings = append(typeStrings, responseObject.Types[i].String())
-	// }
 	return responseObject
 }
 
@@ -185,9 +177,6 @@ func getPokemon(w http.ResponseWriter, r *http.Request) {
 	p := PokemonPage{Name: data.Name, Weaknesses: data.Weaknesses, Image: data.Sprite.Sprite}
 	t, _ := template.ParseFiles("pokemontemplate.html")
 	t.Execute(w, p)
-	// params := mux.Vars(r)
-	// w.Header().Set("Content-Type", "application/json")
-	// json.NewEncoder(w).Encode(calculateWeaknesses(params["name"]))
 }
 
 func main() {
